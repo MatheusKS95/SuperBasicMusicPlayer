@@ -80,18 +80,32 @@ void fill_music_data(stb_vorbis_comment comment, music_data *data)
 	{
 		const char **split = TextSplit(comment.comment_list[i], '=', &counter);
 		SDL_LogDebug(SDL_LOG_CATEGORY_TEST, "%s", comment.comment_list[i]);
-		if(strcmp(split[0], "album") == 0 || strcmp(split[0], "ALBUM") == 0)
+        if((split[0] != NULL) && (strcmp(split[0], "album") == 0 || strcmp(split[0], "ALBUM") == 0))
 		{
 			strncpy(data->album, split[1], 49);
 		}
-		if(strcmp(split[0], "artist") == 0 || strcmp(split[0], "ARTIST") == 0)
+        else
+        {
+            strncpy(data->album, "--", 49);
+        }
+
+        if((split[0] != NULL) && (strcmp(split[0], "artist") == 0 || strcmp(split[0], "ARTIST") == 0))
 		{
 			strncpy(data->artist, split[1], 49);
 		}
-		if(strcmp(split[0], "title") == 0 || strcmp(split[0], "TITLE") == 0)
+        else
+        {
+            strncpy(data->artist, "--", 49);
+        }
+
+        if((split[0] != NULL) && (strcmp(split[0], "title") == 0 || strcmp(split[0], "TITLE") == 0))
 		{
 			strncpy(data->title, split[1], 49);
 		}
+        else
+        {
+            strncpy(data->title, "No music", 49);
+        }
 	}
 }
 
