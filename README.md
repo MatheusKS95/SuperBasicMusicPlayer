@@ -8,7 +8,7 @@ You must pass a song file through command line. It can play Vorbis, MP3 and FLAC
 
 ## Issues (to be fixed)
 
-MP3 and FLAC doesn't show metadata. If Vorbis metadata are incomplete (title, album name and artist are required) you will be greeted with a beautiful segmentation fault. Probably there's some buffer overflow somewhere. Font file are required in the build directory. There are a lot of char array handlings there. Pretty scary code.
+MP3 and FLAC doesn't show metadata. Probably there's some buffer overflow somewhere. Font file are required in the build directory. There are a lot of char array handlings there. Pretty scary code.
 
 ## Dependencies
 
