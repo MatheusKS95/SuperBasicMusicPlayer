@@ -79,33 +79,40 @@ void fill_music_data(stb_vorbis_comment comment, music_data *data)
 	for(i = 0; i < comment.comment_list_length; i++)
 	{
 		const char **split = TextSplit(comment.comment_list[i], '=', &counter);
-		SDL_LogDebug(SDL_LOG_CATEGORY_TEST, "%s", comment.comment_list[i]);
-        if((split[0] != NULL) && (strcmp(split[0], "album") == 0 || strcmp(split[0], "ALBUM") == 0))
+		//SDL_LogDebug(SDL_LOG_CATEGORY_TEST, "%s", comment.comment_list[i]);
+		if(strcmp(split[0], "album") == 0 || strcmp(split[0], "ALBUM") == 0)
 		{
-			strncpy(data->album, split[1], 49);
+			if(split[1] != NULL)
+			{
+				strncpy(data->album, split[1], 49);
+			}
+			else
+			{
+				strncpy(data->album, "--", 49);
+			}
 		}
-        else
-        {
-            strncpy(data->album, "--", 49);
-        }
-
-        if((split[0] != NULL) && (strcmp(split[0], "artist") == 0 || strcmp(split[0], "ARTIST") == 0))
+		else if(strcmp(split[0], "artist") == 0 || strcmp(split[0], "ARTIST") == 0)
 		{
-			strncpy(data->artist, split[1], 49);
+			if(split[1] != NULL)
+			{
+				strncpy(data->artist, split[1], 49);
+			}
+			else
+			{
+				strncpy(data->artist, "--", 49);
+			}
 		}
-        else
-        {
-            strncpy(data->artist, "--", 49);
-        }
-
-        if((split[0] != NULL) && (strcmp(split[0], "title") == 0 || strcmp(split[0], "TITLE") == 0))
+		else if(strcmp(split[0], "title") == 0 || strcmp(split[0], "TITLE") == 0)
 		{
-			strncpy(data->title, split[1], 49);
+			if(split[1] != NULL)
+			{
+				strncpy(data->title, split[1], 49);
+			}
+			else
+			{
+				strncpy(data->title, "--", 49);
+			}
 		}
-        else
-        {
-            strncpy(data->title, "No music", 49);
-        }
 	}
 }
 
@@ -212,6 +219,9 @@ int main(int argc, char *argv[])
 	rect_album.y = rect_artist.y + 30;
 
 	music_data music_tags;
+	strncpy(music_tags.album, "--", 49);
+	strncpy(music_tags.title, "--", 99);
+	strncpy(music_tags.artist, "--", 49);
 
 	SDL_Event event;
 	int playing = 0;
