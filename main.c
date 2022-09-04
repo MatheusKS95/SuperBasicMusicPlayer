@@ -19,8 +19,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <locale.h>
 #include "SDL.h"
-//#include <SDL2/SDL_image.h>
 #include "SDL_mixer.h"
 #include "SDL_ttf.h"
 
@@ -70,6 +70,7 @@ const char **TextSplit(const char *text, char delimiter, int *count)
 
 int main(int argc, char *argv[])
 {
+    setlocale(LC_ALL, "");
     SDL_Window *window;
     SDL_Surface *surface;
     Mix_Music *music;
@@ -92,20 +93,12 @@ int main(int argc, char *argv[])
         return -1;
     }
 
-    /*int imageflags = IMG_INIT_JPG | IMG_INIT_PNG;
-    int initimg = IMG_Init(imageflags);
-    if((initimg&imageflags) != imageflags)
-    {
-        SDL_LogError(SDL_LOG_CATEGORY_ERROR, "%s", IMG_GetError());
-        SDL_Quit();
-        return -1;
-    }*/
-
     int soundflags = MIX_INIT_MP3 | MIX_INIT_OGG | MIX_INIT_FLAC;
     int initsnd = Mix_Init(soundflags);
     if((initsnd&soundflags) != soundflags)
     {
         SDL_LogError(SDL_LOG_CATEGORY_ERROR, "%s", Mix_GetError());
+        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Error", "Failed to init SDL Mixer", window);
         SDL_Quit();
         return -1;
     }
@@ -113,6 +106,7 @@ int main(int argc, char *argv[])
     if(TTF_Init())
     {
         SDL_LogError(SDL_LOG_CATEGORY_ERROR, "%s", TTF_GetError());
+        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Error", "Failed to init SDL TTF", window);
         SDL_Quit();
         return -1;
     }
@@ -128,19 +122,16 @@ int main(int argc, char *argv[])
 
     SDL_Surface *icon_playpause;
     SDL_Surface *icon_stop;
+    SDL_Surface *icon_web;
 
-    SDL_Rect rect_button_playpause;
-
-    SDL_Rect rect_button_stop;
-
-    Uint32 colour_button_unselected = SDL_MapRGB(surface->format, 150, 37, 0);
-    Uint32 colour_button_selected = SDL_MapRGB(surface->format, 170, 57, 0);
-    Uint32 colour_button_pressed = SDL_MapRGB(surface->format, 0, 50, 255);
+    //Uint32 colour_button_unselected = SDL_MapRGB(surface->format, 150, 37, 0);
+    //Uint32 colour_button_selected = SDL_MapRGB(surface->format, 170, 57, 0);
+    //Uint32 colour_button_pressed = SDL_MapRGB(surface->format, 0, 50, 255);
 
     TTF_Font *font_title;
-    font_title = TTF_OpenFont("overpass-extralight-italic.otf", 48);
+    font_title = TTF_OpenFont("FreeSansOblique.ttf", 48);
     TTF_Font *font_others;
-    font_others = TTF_OpenFont("overpass-extralight-italic.otf", 24);
+    font_others = TTF_OpenFont("FreeSansOblique.ttf", 24);
 
     SDL_Color color;
     color.r = 255;
@@ -167,20 +158,22 @@ int main(int argc, char *argv[])
     strncpy(music_tags.title, "--", 99);
     strncpy(music_tags.artist, "--", 49);
 
-    const Uint16 playpause_text[] = u"⏯";
-    const Uint16 stop_text[] = u"⏹";
-    icon_playpause = TTF_RenderUNICODE_Blended(font_others, playpause_text, color);
-    rect_button_playpause = icon_playpause->clip_rect;
-    rect_button_playpause.h = 75;
-    rect_button_playpause.w = 75;
-    rect_button_playpause.x = (WIDTH / 2) - 110;
+    icon_playpause = TTF_RenderText_Blended(font_others, "PLAY/PAUSE", color);
+    SDL_Rect rect_button_playpause = icon_playpause->clip_rect;
+    //rect_button_playpause.h = 75;
+    //rect_button_playpause.w = 75;
+    rect_button_playpause.x = 40;
     rect_button_playpause.y = HEIGHT - 105;
-    icon_stop = TTF_RenderUNICODE_Blended(font_others, stop_text, color);
-    rect_button_stop = icon_stop->clip_rect;
-    rect_button_stop.h = 45;
-    rect_button_stop.w = 45;
-    rect_button_stop.x = rect_button_playpause.x + rect_button_playpause.w + 20;
-    rect_button_stop.y = HEIGHT - 90;
+    icon_stop = TTF_RenderText_Blended(font_others, "STOP", color);
+    SDL_Rect rect_button_stop = icon_stop->clip_rect;
+    //rect_button_stop.h = 45;
+    //rect_button_stop.w = 45;
+    rect_button_stop.x = rect_button_playpause.x + rect_button_playpause.w + 50;
+    rect_button_stop.y = HEIGHT - 105;
+    icon_web = TTF_RenderText_Blended(font_others, "Search artist", color);
+    SDL_Rect rect_button_web = icon_web->clip_rect;
+    rect_button_web.x = rect_button_stop.x + rect_button_stop.w + 50;
+    rect_button_web.y = HEIGHT - 105;
 
     SDL_Event event;
     int playing = 0;
@@ -201,8 +194,6 @@ int main(int argc, char *argv[])
 
         Mix_PlayMusic(music, 0);
 
-        SDL_LogDebug(SDL_LOG_CATEGORY_TEST, "%s", Mix_GetMusicTitle(music));
-
         music_title_playing = TTF_RenderUTF8_Blended(font_title, Mix_GetMusicTitleTag(music), color);
         SDL_Rect rect_title_p = music_title_playing->clip_rect;
         rect_title_p.x = 20;
@@ -221,6 +212,10 @@ int main(int argc, char *argv[])
         window_title[50] = '\0';
 
         SDL_SetWindowTitle(window, window_title);
+    }
+    else
+    {
+        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_WARNING, "Warning", "There's no music to play", window);
     }
 
     while(playing == 0)
@@ -296,6 +291,17 @@ int main(int argc, char *argv[])
                     stop_pressed = 0;
                 }
 
+                if(mouse_x >= rect_button_web.x && mouse_x <= rect_button_web.x + rect_button_web.w)
+                {
+                    if(mouse_y >= rect_button_web.y && mouse_y <= rect_button_web.y + rect_button_web.h)
+                    {
+                        char url[100];
+                        snprintf(url, 100, "https://en.wikipedia.org/wiki/%s", Mix_GetMusicArtistTag(music));
+                        url[99] = '\0';
+                        SDL_OpenURL(url);
+                    }
+                }
+
             }
             if(event.type == SDL_MOUSEBUTTONUP || event.type == SDL_KEYUP)
             {
@@ -353,7 +359,7 @@ int main(int argc, char *argv[])
 
         SDL_FillRect(surface, NULL, SDL_MapRGB(surface->format, 0, 0, 30));
 
-        if(playpause_selected == 0 && playpause_pressed == 0)
+        /*if(playpause_selected == 0 && playpause_pressed == 0)
         {
             SDL_FillRect(surface, &rect_button_playpause, colour_button_unselected);
         }
@@ -385,9 +391,10 @@ int main(int argc, char *argv[])
         else
         {
             SDL_FillRect(surface, &rect_button_playpause, colour_button_unselected);
-        }
-        SDL_BlitSurface(NULL, &rect_button_playpause, surface, &rect_button_playpause);
-        SDL_BlitSurface(surface, &rect_button_stop, surface, &rect_button_stop);
+        }*/
+        SDL_BlitSurface(icon_playpause, NULL, surface, &rect_button_playpause);
+        SDL_BlitSurface(icon_stop, NULL, surface, &rect_button_stop);
+        SDL_BlitSurface(icon_web, NULL, surface, &rect_button_web);
 
         if(Mix_PlayingMusic())
         {
@@ -401,7 +408,6 @@ int main(int argc, char *argv[])
             SDL_BlitSurface(music_artist_empty, NULL, surface, &rect_artist);
             SDL_BlitSurface(music_album_empty, NULL, surface, &rect_album);
         }
-        //Mix_getMu
     }
 
     Mix_HaltMusic();

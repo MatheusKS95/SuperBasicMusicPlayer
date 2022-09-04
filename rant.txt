@@ -1,0 +1,25 @@
+WHY YOU VENDORED STATIC LIBRARIES WITH YOU REPOSITORY? WHY DIDN'T YOU USE XXYY?
+
+I shipped because I'm f---ing tired.
+And honestly I'm not good at all with dealing with dependencies. So I'll vendor them for now.
+
+bUt yOu cOuLd uSe cMakE
+
+I tried, tried and tried. CMake is horrible. It's difficult to do something more complex without breaking something.
+Everytime something breaks I spend at least 5 to 10 hours tring to make everything work again. Vendoring libraries at this moment will save me from a stroke in the near future.
+If I manage to find a way to deal with these libraries, fine. But I simply don't want the headache now.
+
+This is my last repo using the most complex CMake shit I know how to do.
+Every CMake tutorial and guide does things a diffent way and you get lost. And some production-level CMakeLists are completely different from what you learn from tutorials and guides (including documentation).
+I'm not going to enter the realm of the CMake script because no one likes it.
+
+I began using Premake with some with my newer repos. Premake is still lacky and have some issues but being Lua and sucking less than CMake is a good reason to use it instead of CMake.
+However, some of my dependencies uses CMake - adapting them to Premake is like rewriting the Bible using ICS flags.
+
+I could use system packages right? Right?
+
+One of the libs here use a functionality that comes in a recent update, so it's feasible on Debian Sid but not Bullseye.
+How to make sure that a Bullseye (or even Buster) user will have the right version if the most recent version of given library in Bullseye repos is almost 2 years old?
+(these libraries aren't in backport and even if they were, why the fuck would I require users to set up a backport?)
+
+So I'll put these damned .a files there and they will remain there until I can put it somewhere else and do it the "profesional" way
