@@ -18,10 +18,19 @@ cmake_minimum_required(VERSION 3.10)
 
 project(SuperBasicMusicPlayer)
 
-add_executable(SuperBasicMusicPlayer stb_vorbis.c main.c)
+#set(PROJECT_LINK_LIBS1 libSDL2-2.0.so.0.2400.0)
+#set(PROJECT_LINK_LIBS2 libSDL2_mixer-2.0.so.0.600.2)
+#set(PROJECT_LINK_LIBS3 libSDL2_ttf-2.0.so.0.2000.1)
+#link_directories(${PROJECT_SOURCE_DIR}/external/libs)
 
+include_directories(${PROJECT_SOURCE_DIR}/external/include)
+
+add_executable(SuperBasicMusicPlayer main.c)
+
+target_link_libraries(SuperBasicMusicPlayer ${PROJECT_SOURCE_DIR}/external/libs/libSDL2.a)
+target_link_libraries(SuperBasicMusicPlayer ${PROJECT_SOURCE_DIR}/external/libs/libSDL2_mixer.a)
+target_link_libraries(SuperBasicMusicPlayer ${PROJECT_SOURCE_DIR}/external/libs/libSDL2_ttf.a)
 target_link_libraries(SuperBasicMusicPlayer m)
-target_link_libraries(SuperBasicMusicPlayer SDL2)
-target_link_libraries(SuperBasicMusicPlayer SDL2_image)
-target_link_libraries(SuperBasicMusicPlayer SDL2_mixer)
-target_link_libraries(SuperBasicMusicPlayer SDL2_ttf)
+target_link_libraries(SuperBasicMusicPlayer pthread)
+target_link_libraries(SuperBasicMusicPlayer freetype)
+target_link_libraries(SuperBasicMusicPlayer dl)
