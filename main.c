@@ -20,9 +20,16 @@
 #include <stdlib.h>
 #include <string.h>
 #include <locale.h>
+
+#ifdef STATIC
 #include "SDL.h"
 #include "SDL_mixer.h"
 #include "SDL_ttf.h"
+#else
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_mixer.h>
+#include <SDL2/SDL_ttf.h>
+#endif
 
 const int WIDTH = 600;
 const int HEIGHT = 300;
@@ -83,6 +90,16 @@ int main(int argc, char *argv[])
         SDL_Quit();
         return -1;
     }
+    
+	#ifdef DEBUG
+	SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, "Running in debug mode");
+	#else
+	SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, "Running in release mode");
+    #endif
+	
+	#ifdef STATIC
+	SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, "Using shipped libraries");
+	#endif
 
     window = SDL_CreateWindow("BASIC MEDIA PLAYER", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WIDTH, HEIGHT, SDL_WINDOW_SHOWN);
 
