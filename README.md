@@ -1,6 +1,6 @@
 # SuperBasicMusicPlayer
 
-<img align='right' src="sbmp.png" alt="Super Basic Music Player screen" />
+<img src="sbmp.png" alt="Super Basic Music Player screen" />
 
 A WIP music player for Linux terminal. This code was initially made in few hours out of boredom while I was without internet connection, purely based on other projects I have made. I added and changed some things later on.
 
