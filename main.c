@@ -34,47 +34,6 @@
 const int WIDTH = 600;
 const int HEIGHT = 300;
 
-typedef struct music_data
-{
-    char artist[50];
-    char title[100];
-    char album[50];
-} music_data;
-
-const char **TextSplit(const char *text, char delimiter, int *count)
-{
-    // thanks raylib
-
-    static const char *result[3] = { NULL };
-    static char buffer[150] = { 0 };
-    memset(buffer, 0, 150);
-
-    result[0] = buffer;
-    int counter = 0;
-
-    if (text != NULL)
-    {
-        counter = 1;
-
-        for (int i = 0; i < 150; i++)
-        {
-            buffer[i] = text[i];
-            if (buffer[i] == '\0') break;
-            else if (buffer[i] == delimiter)
-            {
-                buffer[i] = '\0';   // Set an end of string at this point
-                result[counter] = buffer + i + 1;
-                counter++;
-
-                if (counter == 3) break;
-            }
-        }
-    }
-
-    *count = counter;
-    return result;
-}
-
 int main(int argc, char *argv[])
 {
     setlocale(LC_ALL, "");
@@ -90,6 +49,15 @@ int main(int argc, char *argv[])
         SDL_Quit();
         return -1;
     }
+	printf("SuperBasicMusicPlayer  Copyright (C) 2022  Matheus K. Schaefer\n");
+	printf("This is free software, and you are welcome to redistribute it under the terms of GNU GPL v3 or later.\n");
+	printf("This software also includes SDL code (including SDL_mixer and SDL_ttf, which is licensed under Zlib license. Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>\n");
+	
+	SDL_version compiled;
+	SDL_version linked;
+
+	SDL_VERSION(&compiled);
+	SDL_GetVersion(&linked);
     
 	#ifdef DEBUG
 	SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, "Running in debug mode");
@@ -98,10 +66,12 @@ int main(int argc, char *argv[])
     #endif
 	
 	#ifdef STATIC
-	SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, "Using shipped libraries");
+	SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, "Using shipped static libraries");
+	#else
+	SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, "Using installed libraries. Project was compiled using SDL version %u.%u.%u and linked against %u.%u.%u", compiled.major, compiled.minor, compiled.patch, linked.major, linked.minor, linked.patch);
 	#endif
 
-    window = SDL_CreateWindow("BASIC MEDIA PLAYER", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WIDTH, HEIGHT, SDL_WINDOW_SHOWN);
+    window = SDL_CreateWindow("SUPER BASIC MEDIA PLAYER", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WIDTH, HEIGHT, SDL_WINDOW_SHOWN);
 
     if(window == NULL)
     {
@@ -141,10 +111,6 @@ int main(int argc, char *argv[])
     SDL_Surface *icon_stop;
     SDL_Surface *icon_web;
 
-    //Uint32 colour_button_unselected = SDL_MapRGB(surface->format, 150, 37, 0);
-    //Uint32 colour_button_selected = SDL_MapRGB(surface->format, 170, 57, 0);
-    //Uint32 colour_button_pressed = SDL_MapRGB(surface->format, 0, 50, 255);
-
     TTF_Font *font_title;
     font_title = TTF_OpenFont("FreeSansOblique.ttf", 48);
     TTF_Font *font_others;
@@ -169,11 +135,6 @@ int main(int argc, char *argv[])
     SDL_Rect rect_album = music_album_empty->clip_rect;
     rect_album.x =  20;
     rect_album.y = rect_artist.y + 30;
-
-    music_data music_tags;
-    strncpy(music_tags.album, "--", 49);
-    strncpy(music_tags.title, "--", 99);
-    strncpy(music_tags.artist, "--", 49);
 
     icon_playpause = TTF_RenderText_Blended(font_others, "PLAY/PAUSE", color);
     SDL_Rect rect_button_playpause = icon_playpause->clip_rect;
@@ -375,40 +336,6 @@ int main(int argc, char *argv[])
         }
 
         SDL_FillRect(surface, NULL, SDL_MapRGB(surface->format, 0, 0, 30));
-
-        /*if(playpause_selected == 0 && playpause_pressed == 0)
-        {
-            SDL_FillRect(surface, &rect_button_playpause, colour_button_unselected);
-        }
-        else if(playpause_selected == 1 && playpause_pressed == 0)
-        {
-            SDL_FillRect(surface, &rect_button_playpause, colour_button_selected);
-        }
-        else if(playpause_selected == 1 && playpause_pressed == 1)
-        {
-            SDL_FillRect(surface, &rect_button_playpause, colour_button_pressed);
-        }
-        else
-        {
-            SDL_FillRect(surface, &rect_button_playpause, colour_button_unselected);
-        }
-
-        if(stop_selected == 0 && stop_pressed == 0)
-        {
-            SDL_FillRect(surface, &rect_button_stop, colour_button_unselected);
-        }
-        else if(stop_selected == 1 && stop_pressed == 0)
-        {
-            SDL_FillRect(surface, &rect_button_stop, colour_button_selected);
-        }
-        else if(stop_selected == 1 && stop_pressed == 1)
-        {
-            SDL_FillRect(surface, &rect_button_stop, colour_button_pressed);
-        }
-        else
-        {
-            SDL_FillRect(surface, &rect_button_playpause, colour_button_unselected);
-        }*/
         SDL_BlitSurface(icon_playpause, NULL, surface, &rect_button_playpause);
         SDL_BlitSurface(icon_stop, NULL, surface, &rect_button_stop);
         SDL_BlitSurface(icon_web, NULL, surface, &rect_button_web);
