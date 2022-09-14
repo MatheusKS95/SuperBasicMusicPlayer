@@ -2,11 +2,11 @@
 
 <img src="sbmp.png" alt="Super Basic Music Player screen" />
 
-A WIP music player for Linux terminal. This code was initially made in few hours out of boredom while I was without internet connection, purely based on other projects I have made. I added and changed some things later on.
+A WIP music player for Linux (originally launched via terminal). This code was initially made in few hours out of boredom while I was without internet connection, purely based on other projects I have made. I added and changed some things later on.
 
 ## How does it work?
 
-You must pass a song file through command line (TODO via drag-drop). It can play Vorbis (.ogg), MP3 and FLAC.
+You must pass a song file through command line or dragging and dropping the file. It can play Vorbis (.ogg), MP3 and FLAC.
 
 ## Issues (to be fixed)
 
