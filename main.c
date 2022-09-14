@@ -34,12 +34,59 @@
 const int WIDTH = 600;
 const int HEIGHT = 300;
 
+SDL_Window *window;
+Mix_Music *music;
+
+SDL_Surface *music_title_playing;
+SDL_Surface *music_artist_playing;
+SDL_Surface *music_album_playing;
+SDL_Surface *music_title_empty;
+SDL_Surface *music_artist_empty;
+SDL_Surface *music_album_empty;
+
+TTF_Font *font_title;
+TTF_Font *font_others;
+
+SDL_Color color;
+
+void loadmusic(char *filename)
+{
+	Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 1024);
+	music = Mix_LoadMUS(filename);
+	if(music == NULL)
+	{
+		SDL_LogError(SDL_LOG_CATEGORY_ERROR, "F A I L %s", Mix_GetError());
+	}
+
+	Mix_PlayMusic(music, 0);
+}
+
+void loadmetadata()
+{
+	music_title_playing = TTF_RenderUTF8_Blended(font_title, strlen(Mix_GetMusicTitleTag(music)) != 0 ? Mix_GetMusicTitleTag(music) : "No title", color);
+	SDL_Rect rect_title_p = music_title_playing->clip_rect;
+	rect_title_p.x = 20;
+	rect_title_p.y = 20;
+	music_artist_playing = TTF_RenderUTF8_Blended(font_others, strlen(Mix_GetMusicArtistTag(music)) != 0 ? Mix_GetMusicArtistTag(music) : "No artist info", color);
+	SDL_Rect rect_artist_p = music_artist_playing->clip_rect;
+	rect_artist_p.x = 20;
+	rect_artist_p.y = rect_title_p.y + 70;
+	music_album_playing = TTF_RenderUTF8_Blended(font_others, strlen(Mix_GetMusicAlbumTag(music)) != 0 ? Mix_GetMusicAlbumTag(music) : "No album info", color);
+	SDL_Rect rect_album_p = music_album_playing->clip_rect;
+	rect_album_p.x = 20;
+	rect_album_p.y = rect_artist_p.y + 30;
+
+	char window_title[51];
+	snprintf(window_title, 50, "%s - SUPER BASIC MUSIC PLAYER", Mix_GetMusicTitle(music));
+	window_title[50] = '\0';
+
+	SDL_SetWindowTitle(window, window_title);
+}
+
 int main(int argc, char *argv[])
 {
     setlocale(LC_ALL, "");
-    SDL_Window *window;
     SDL_Surface *surface;
-    Mix_Music *music;
 
     window = NULL;
     surface = NULL;
@@ -82,7 +129,7 @@ int main(int argc, char *argv[])
 
     int soundflags = MIX_INIT_MP3 | MIX_INIT_OGG | MIX_INIT_FLAC;
     int initsnd = Mix_Init(soundflags);
-    if((initsnd&soundflags) != soundflags)
+	if((initsnd&soundflags) != soundflags)
     {
         SDL_LogError(SDL_LOG_CATEGORY_ERROR, "%s", Mix_GetError());
         SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Error", "Failed to init SDL Mixer", window);
@@ -100,23 +147,13 @@ int main(int argc, char *argv[])
 
     surface = SDL_GetWindowSurface(window);
 
-    SDL_Surface *music_title_playing;
-    SDL_Surface *music_artist_playing;
-    SDL_Surface *music_album_playing;
-    SDL_Surface *music_title_empty;
-    SDL_Surface *music_artist_empty;
-    SDL_Surface *music_album_empty;
-
     SDL_Surface *icon_playpause;
     SDL_Surface *icon_stop;
     SDL_Surface *icon_web;
 
-    TTF_Font *font_title;
     font_title = TTF_OpenFont("FreeSansOblique.ttf", 48);
-    TTF_Font *font_others;
     font_others = TTF_OpenFont("FreeSansOblique.ttf", 24);
 
-    SDL_Color color;
     color.r = 255;
     color.g = 255;
     color.b = 0;
@@ -163,37 +200,13 @@ int main(int argc, char *argv[])
     //check if there are any arguments
     if(argc >= 2)
     {
-        Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 1024);
-        music = Mix_LoadMUS(argv[1]);
-        if(music == NULL)
-        {
-            SDL_LogError(SDL_LOG_CATEGORY_ERROR, "F A I L %s", Mix_GetError());
-        }
-
-        Mix_PlayMusic(music, 0);
-
-        music_title_playing = TTF_RenderUTF8_Blended(font_title, Mix_GetMusicTitleTag(music), color);
-        SDL_Rect rect_title_p = music_title_playing->clip_rect;
-        rect_title_p.x = 20;
-        rect_title_p.y = 20;
-        music_artist_playing = TTF_RenderUTF8_Blended(font_others, Mix_GetMusicArtistTag(music), color);
-        SDL_Rect rect_artist_p = music_artist_playing->clip_rect;
-        rect_artist_p.x = 20;
-        rect_artist_p.y = rect_title_p.y + 70;
-        music_album_playing = TTF_RenderUTF8_Blended(font_others, Mix_GetMusicAlbumTag(music), color);
-        SDL_Rect rect_album_p = music_album_playing->clip_rect;
-        rect_album_p.x = 20;
-        rect_album_p.y = rect_artist_p.y + 30;
-
-        char window_title[51];
-        snprintf(window_title, 50, "%s - SUPER BASIC MUSIC PLAYER", Mix_GetMusicTitle(music));
-        window_title[50] = '\0';
-
-        SDL_SetWindowTitle(window, window_title);
+		loadmusic(argv[1]);
+		
+		loadmetadata();
     }
     else
     {
-        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_WARNING, "Warning", "There's no music to play", window);
+        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_WARNING, "Warning", "There's no music to play - please drag and drop one.", window);
     }
 
     while(playing == 0)
@@ -327,7 +340,11 @@ int main(int argc, char *argv[])
                     stop_selected = 0;
                 }
             }
-
+			if(event.type == SDL_DROPFILE)
+			{
+				loadmusic(event.drop.file);
+				loadmetadata();
+			}
             if(event.type == SDL_QUIT)
             {
                 playing = 1;
