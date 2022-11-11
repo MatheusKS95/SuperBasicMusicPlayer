@@ -118,7 +118,7 @@ int main(int argc, char *argv[])
 	SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, "Using installed libraries. Project was compiled using SDL version %u.%u.%u and linked against %u.%u.%u", compiled.major, compiled.minor, compiled.patch, linked.major, linked.minor, linked.patch);
 	#endif
 
-    window = SDL_CreateWindow("SUPER BASIC MEDIA PLAYER", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WIDTH, HEIGHT, SDL_WINDOW_SHOWN);
+    window = SDL_CreateWindow("SUPER BASIC MEDIA PLAYER", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WIDTH, HEIGHT, 0);
 
     if(window == NULL)
     {
@@ -216,82 +216,53 @@ int main(int argc, char *argv[])
         {
             if(event.type == SDL_MOUSEBUTTONDOWN)
             {
-                int mouse_x;
-                int mouse_y;
+				const SDL_Point pt = {event.button.x, event.button.y};
+				if(SDL_PointInRect(&pt, &rect_button_playpause))
+				{
+					playpause_pressed = 1;
+					if(!Mix_PausedMusic())
+					{
+						Mix_PauseMusic();
+					}
+					else
+					{
+						Mix_ResumeMusic();
+					}
 
-                Uint32 button = SDL_GetMouseState(&mouse_x, &mouse_y);
+					if(Mix_PlayingMusic() <= 0)
+					{
+						Mix_PlayMusic(music, 0);
+					}
+				}
+				else
+				{
+					playpause_pressed = 0;
+				}
+				
+				if(SDL_PointInRect(&pt, &rect_button_stop))
+				{
+					if(Mix_PlayingMusic() != 0)
+					{
+						stop_pressed = 1;
+						Mix_FadeOutMusic(1000);
+					}
+					else
+					{
+						stop_pressed = 0;
+					}
+				}
+				else
+				{
+					stop_pressed = 0;
+				}
 
-                if(mouse_x >= rect_button_playpause.x && mouse_x <= rect_button_playpause.x + rect_button_playpause.w)
-                {
-                    if(mouse_y >= rect_button_playpause.y && mouse_y <= rect_button_playpause.y + rect_button_playpause.h)
-                    {
-                        if((button & SDL_BUTTON_LMASK) != 0)
-                        {
-                            playpause_pressed = 1;
-                            if(!Mix_PausedMusic())
-                            {
-                                Mix_PauseMusic();
-                            }
-                            else
-                            {
-                                Mix_ResumeMusic();
-                            }
-
-                            if(Mix_PlayingMusic() <= 0)
-                            {
-                                Mix_PlayMusic(music, 0);
-                            }
-                        }
-                        else
-                        {
-                            playpause_pressed = 0;
-                        }
-                    }
-                    else
-                    {
-                        playpause_pressed = 0;
-                    }
-                }
-                else
-                {
-                    playpause_pressed = 0;
-                }
-
-                if(mouse_x >= rect_button_stop.x && mouse_x <= rect_button_stop.x + rect_button_stop.w)
-                {
-                    if(mouse_y >= rect_button_stop.y && mouse_y <= rect_button_stop.y + rect_button_stop.h)
-                    {
-                        if((button & SDL_BUTTON_LMASK) != 0 && Mix_PlayingMusic() != 0)
-                        {
-                            stop_pressed = 1;
-                            Mix_FadeOutMusic(1000);
-                            //Mix_FreeMusic(music);
-                        }
-                        else
-                        {
-                            stop_pressed = 0;
-                        }
-                    }
-                    else
-                    {
-                        stop_pressed = 0;
-                    }
-                }
-                else
-                {
-                    stop_pressed = 0;
-                }
-
-                if(mouse_x >= rect_button_web.x && mouse_x <= rect_button_web.x + rect_button_web.w)
-                {
-                    if(mouse_y >= rect_button_web.y && mouse_y <= rect_button_web.y + rect_button_web.h)
-                    {
-                        char url[100];
-                        snprintf(url, 100, "https://en.wikipedia.org/wiki/%s", Mix_GetMusicArtistTag(music));
-                        url[99] = '\0';
-                        SDL_OpenURL(url);
-                    }
-                }
+				if(SDL_PointInRect(&pt, &rect_button_web))
+				{
+					char url[100];
+					snprintf(url, 100, "https://en.wikipedia.org/wiki/%s", Mix_GetMusicArtistTag(music));
+					url[99] = '\0';
+					SDL_OpenURL(url);
+				}
 
             }
             if(event.type == SDL_MOUSEBUTTONUP || event.type == SDL_KEYUP)
@@ -303,54 +274,36 @@ int main(int argc, char *argv[])
             }
             if(event.type == SDL_MOUSEMOTION)
             {
-                int mouse_x;
-                int mouse_y;
-
-                Uint32 button = SDL_GetMouseState(&mouse_x, &mouse_y); //button is unused for now
-
-                if(mouse_x >= rect_button_playpause.x && mouse_x <= rect_button_playpause.x + rect_button_playpause.w)
-                {
-                    if(mouse_y >= rect_button_playpause.y && mouse_y <= rect_button_playpause.y + rect_button_playpause.h)
-                    {
-                        playpause_selected = 1;
-                    }
-                    else
-                    {
-                        playpause_selected = 0;
-                    }
-                }
-                else
-                {
-                    playpause_selected = 0;
-                }
-
-                if(mouse_x >= rect_button_stop.x && mouse_x <= rect_button_stop.x + rect_button_stop.w)
-                {
-                    if(mouse_y >= rect_button_stop.y && mouse_y <= rect_button_stop.y + rect_button_stop.h)
-                    {
-                        stop_selected = 1;
-                    }
-                    else
-                    {
-                        stop_selected = 0;
-                    }
-                }
-                else
-                {
-                    stop_selected = 0;
-                }
+				const SDL_Point pt = {event.button.x, event.button.y};
+				if(SDL_PointInRect(&pt, &rect_button_playpause))
+				{
+					playpause_selected = 1;
+				}
+				else
+				{
+					playpause_selected = 0;
+				}
+				
+				if(SDL_PointInRect(&pt, &rect_button_stop))
+				{
+					stop_selected = 1;
+				}
+				else
+				{
+					stop_selected = 0;
+				}
             }
 			if(event.type == SDL_DROPFILE)
 			{
 				loadmusic(event.drop.file);
 				loadmetadata();
 			}
-            if(event.type == SDL_QUIT)
-            {
-                playing = 1;
-                break;
-            }
-        }
+			if(event.type == SDL_QUIT)
+			{
+				playing = 1;
+				break;
+			}
+		}
 
         SDL_FillRect(surface, NULL, SDL_MapRGB(surface->format, 0, 0, 30));
         SDL_BlitSurface(icon_playpause, NULL, surface, &rect_button_playpause);
