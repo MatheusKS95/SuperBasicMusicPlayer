@@ -85,17 +85,17 @@ void loadmetadata()
 
 int main(int argc, char *argv[])
 {
-    setlocale(LC_ALL, "");
-    SDL_Surface *surface;
+	//setlocale(LC_ALL, "");
+	SDL_Surface *surface;
 
-    window = NULL;
-    surface = NULL;
+	window = NULL;
+	surface = NULL;
 
-    if(SDL_Init(SDL_INIT_EVERYTHING))
-    {
-        SDL_Quit();
-        return -1;
-    }
+	if(SDL_Init(SDL_INIT_EVERYTHING))
+	{
+		SDL_Quit();
+		return -1;
+	}
 	printf("SuperBasicMusicPlayer  Copyright (C) 2022  Matheus K. Schaefer\n");
 	printf("This is free software, and you are welcome to redistribute it under the terms of GNU GPL v3 or later.\n");
 	printf("This software also includes SDL code (including SDL_mixer and SDL_ttf, which is licensed under Zlib license. Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>\n");
@@ -149,7 +149,7 @@ int main(int argc, char *argv[])
 
     SDL_Surface *icon_playpause;
     SDL_Surface *icon_stop;
-    SDL_Surface *icon_web;
+    SDL_Surface *icon_rewind;
 
     font_title = TTF_OpenFont("FreeSansOblique.ttf", 48);
     font_others = TTF_OpenFont("FreeSansOblique.ttf", 24);
@@ -185,10 +185,10 @@ int main(int argc, char *argv[])
     //rect_button_stop.w = 45;
     rect_button_stop.x = rect_button_playpause.x + rect_button_playpause.w + 50;
     rect_button_stop.y = HEIGHT - 105;
-    icon_web = TTF_RenderText_Blended(font_others, "Search artist", color);
-    SDL_Rect rect_button_web = icon_web->clip_rect;
-    rect_button_web.x = rect_button_stop.x + rect_button_stop.w + 50;
-    rect_button_web.y = HEIGHT - 105;
+    icon_rewind = TTF_RenderText_Blended(font_others, "REWIND", color);
+    SDL_Rect rect_button_rewind = icon_rewind->clip_rect;
+    rect_button_rewind.x = rect_button_stop.x + rect_button_stop.w + 50;
+    rect_button_rewind.y = HEIGHT - 105;
 
     SDL_Event event;
     int playing = 0;
@@ -256,24 +256,21 @@ int main(int argc, char *argv[])
 					stop_pressed = 0;
 				}
 
-				if(SDL_PointInRect(&pt, &rect_button_web))
+				if(SDL_PointInRect(&pt, &rect_button_rewind))
 				{
-					char url[100];
-					snprintf(url, 100, "https://en.wikipedia.org/wiki/%s", Mix_GetMusicArtistTag(music));
-					url[99] = '\0';
-					SDL_OpenURL(url);
+					Mix_RewindMusic();
 				}
 
-            }
-            if(event.type == SDL_MOUSEBUTTONUP || event.type == SDL_KEYUP)
-            {
-                playpause_pressed = 0;
-                stop_pressed = 0;
-                //playpause_selected = 0;
-                break;
-            }
-            if(event.type == SDL_MOUSEMOTION)
-            {
+			}
+			if(event.type == SDL_MOUSEBUTTONUP || event.type == SDL_KEYUP)
+			{
+				playpause_pressed = 0;
+				stop_pressed = 0;
+				//playpause_selected = 0;
+				break;
+			}
+			if(event.type == SDL_MOUSEMOTION)
+			{
 				const SDL_Point pt = {event.button.x, event.button.y};
 				if(SDL_PointInRect(&pt, &rect_button_playpause))
 				{
@@ -297,7 +294,20 @@ int main(int argc, char *argv[])
 			{
 				loadmusic(event.drop.file);
 				loadmetadata();
+				SDL_free(event.drop.file);
+				break;
 			}
+			/*if(event.type == SDL_KEYDOWN) //experiments using 3d audio, not much useful for SBMP
+			{
+				if(event.key.keysym.sym == SDLK_LEFT)
+				{
+					Mix_SetPosition(MIX_CHANNEL_POST, 180, 130);
+				}
+				if(event.key.keysym.sym == SDLK_LEFT)
+				{
+					Mix_SetPosition(MIX_CHANNEL_POST, 360, 130);
+				}
+			}*/
 			if(event.type == SDL_QUIT)
 			{
 				playing = 1;
@@ -305,36 +315,36 @@ int main(int argc, char *argv[])
 			}
 		}
 
-        SDL_FillRect(surface, NULL, SDL_MapRGB(surface->format, 0, 0, 30));
-        SDL_BlitSurface(icon_playpause, NULL, surface, &rect_button_playpause);
-        SDL_BlitSurface(icon_stop, NULL, surface, &rect_button_stop);
-        SDL_BlitSurface(icon_web, NULL, surface, &rect_button_web);
+		SDL_FillRect(surface, NULL, SDL_MapRGB(surface->format, 0, 0, 30));
+		SDL_BlitSurface(icon_playpause, NULL, surface, &rect_button_playpause);
+		SDL_BlitSurface(icon_stop, NULL, surface, &rect_button_stop);
+		SDL_BlitSurface(icon_rewind, NULL, surface, &rect_button_rewind);
 
-        if(Mix_PlayingMusic())
-        {
-            SDL_BlitSurface(music_title_playing, NULL, surface, &rect_title);
-            SDL_BlitSurface(music_artist_playing, NULL, surface, &rect_artist);
-            SDL_BlitSurface(music_album_playing, NULL, surface, &rect_album);
-        }
-        else
-        {
-            SDL_BlitSurface(music_title_empty, NULL, surface, &rect_title);
-            SDL_BlitSurface(music_artist_empty, NULL, surface, &rect_artist);
-            SDL_BlitSurface(music_album_empty, NULL, surface, &rect_album);
-        }
-    }
+		if(Mix_PlayingMusic())
+		{
+			SDL_BlitSurface(music_title_playing, NULL, surface, &rect_title);
+			SDL_BlitSurface(music_artist_playing, NULL, surface, &rect_artist);
+			SDL_BlitSurface(music_album_playing, NULL, surface, &rect_album);
+		}
+		else
+		{
+			SDL_BlitSurface(music_title_empty, NULL, surface, &rect_title);
+			SDL_BlitSurface(music_artist_empty, NULL, surface, &rect_artist);
+			SDL_BlitSurface(music_album_empty, NULL, surface, &rect_album);
+		}
+	}
 
-    Mix_HaltMusic();
-    Mix_FreeMusic(music);
-    Mix_CloseAudio();
-    Mix_Quit();
+	Mix_HaltMusic();
+	Mix_FreeMusic(music);
+	Mix_CloseAudio();
+	Mix_Quit();
 
-    TTF_CloseFont(font_title);
-    TTF_CloseFont(font_others);
-    TTF_Quit();
-    SDL_DestroyWindow(window);
+	TTF_CloseFont(font_title);
+	TTF_CloseFont(font_others);
+	TTF_Quit();
+	SDL_DestroyWindow(window);
 
-    SDL_Quit();
+	SDL_Quit();
 
-    return 0;
+	return 0;
 }
