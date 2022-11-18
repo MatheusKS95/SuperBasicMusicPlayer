@@ -1,6 +1,6 @@
 # SuperBasicMusicPlayer
 
-<img src="sbmp.png" alt="Super Basic Music Player screen" />
+<img src="sbmp.png" alt="Super Basic Music Player screen, playing 'Light it Up', a song by Robin Hustin, TobiMorrow and Jex, released by NCS." />
 
 A WIP music player for Linux (originally launched via terminal). This code was initially made in few hours out of boredom while I was without internet connection, purely based on other projects I have made. I added and changed some things later on.
 
@@ -10,7 +10,7 @@ You must pass a song file through command line or dragging and dropping the file
 
 ## Issues (to be fixed)
 
-Unclean code. Untested using libraries already on the system. Cannot play opus and other music formats. May crash if the song has invalid metadata.
+Unclean code. Untested using libraries already on the system. Cannot play Opus and other music formats. Wasn't made to run on Windows nor MacOS X (might run if you fix the dependencies, but no guarantees).
 
 ## Dependencies
 
