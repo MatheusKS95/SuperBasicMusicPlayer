@@ -145,6 +145,8 @@ int main(int argc, char *argv[])
         return -1;
     }
 
+    SDL_EventState(SDL_DROPFILE, SDL_ENABLE); //just to make sure
+
     surface = SDL_GetWindowSurface(window);
 
     SDL_Surface *icon_playpause;
