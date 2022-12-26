@@ -35,6 +35,7 @@ const int WIDTH = 600;
 const int HEIGHT = 300;
 
 SDL_Window *window;
+SDL_Surface *surface;
 Mix_Music *music;
 
 SDL_Surface *music_title_playing;
@@ -48,6 +49,17 @@ TTF_Font *font_title;
 TTF_Font *font_others;
 
 SDL_Color color;
+
+SDL_Surface *icon_playpause;
+SDL_Surface *icon_stop;
+SDL_Surface *icon_rewind;
+
+SDL_Rect rect_title;
+SDL_Rect rect_artist;
+SDL_Rect rect_album;
+SDL_Rect rect_button_playpause;
+SDL_Rect rect_button_stop;
+SDL_Rect rect_button_rewind;
 
 void loadmusic(char *filename)
 {
@@ -83,22 +95,16 @@ void loadmetadata()
 	SDL_SetWindowTitle(window, window_title);
 }
 
-int main(int argc, char *argv[])
+void init_everything()
 {
-	//setlocale(LC_ALL, "");
-	SDL_Surface *surface;
-
 	window = NULL;
 	surface = NULL;
 
 	if(SDL_Init(SDL_INIT_EVERYTHING))
 	{
 		SDL_Quit();
-		return -1;
+		exit(-1);
 	}
-	printf("SuperBasicMusicPlayer  Copyright (C) 2022  Matheus K. Schaefer\n");
-	printf("This is free software, and you are welcome to redistribute it under the terms of GNU GPL v3 or later.\n");
-	printf("This software also includes SDL code (including SDL_mixer and SDL_ttf, which is licensed under Zlib license. Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>\n");
 	
 	SDL_version compiled;
 	SDL_version linked;
@@ -117,107 +123,92 @@ int main(int argc, char *argv[])
 	#else
 	SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, "Using installed libraries. Project was compiled using SDL version %u.%u.%u and linked against %u.%u.%u", compiled.major, compiled.minor, compiled.patch, linked.major, linked.minor, linked.patch);
 	#endif
-
-    window = SDL_CreateWindow("SUPER BASIC MEDIA PLAYER", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WIDTH, HEIGHT, 0);
-
-    if(window == NULL)
-    {
-        SDL_LogError(SDL_LOG_CATEGORY_ERROR, "%s", SDL_GetError());
-        SDL_Quit();
-        return -1;
-    }
-
-    int soundflags = MIX_INIT_MP3 | MIX_INIT_OGG | MIX_INIT_FLAC;
-    int initsnd = Mix_Init(soundflags);
+	
+	int soundflags = MIX_INIT_MP3 | MIX_INIT_OGG | MIX_INIT_FLAC;
+	int initsnd = Mix_Init(soundflags);
 	if((initsnd&soundflags) != soundflags)
-    {
-        SDL_LogError(SDL_LOG_CATEGORY_ERROR, "%s", Mix_GetError());
-        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Error", "Failed to init SDL Mixer", window);
-        SDL_Quit();
-        return -1;
-    }
+	{
+		SDL_LogError(SDL_LOG_CATEGORY_ERROR, "%s", Mix_GetError());
+		SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Error", "Failed to init SDL Mixer", window);
+		SDL_Quit();
+		exit(-1);
+	}
 
-    if(TTF_Init())
-    {
-        SDL_LogError(SDL_LOG_CATEGORY_ERROR, "%s", TTF_GetError());
-        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Error", "Failed to init SDL TTF", window);
-        SDL_Quit();
-        return -1;
-    }
+	if(TTF_Init())
+	{
+		SDL_LogError(SDL_LOG_CATEGORY_ERROR, "%s", TTF_GetError());
+		SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Error", "Failed to init SDL TTF", window);
+		SDL_Quit();
+		exit(-1);
+	}
+}
 
-    SDL_EventState(SDL_DROPFILE, SDL_ENABLE); //just to make sure
+void prepare_window()
+{
+	window = SDL_CreateWindow("SUPER BASIC MEDIA PLAYER", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WIDTH, HEIGHT, 0);
 
-    surface = SDL_GetWindowSurface(window);
+	if(window == NULL)
+	{
+		SDL_LogError(SDL_LOG_CATEGORY_ERROR, "%s", SDL_GetError());
+		SDL_Quit();
+		exit(-1);
+	}
+	
+	surface = SDL_GetWindowSurface(window);
 
-    SDL_Surface *icon_playpause;
-    SDL_Surface *icon_stop;
-    SDL_Surface *icon_rewind;
+	font_title = TTF_OpenFont("FreeSansOblique.ttf", 48);
+	font_others = TTF_OpenFont("FreeSansOblique.ttf", 24);
 
-    font_title = TTF_OpenFont("FreeSansOblique.ttf", 48);
-    font_others = TTF_OpenFont("FreeSansOblique.ttf", 24);
+	color.r = 255;
+	color.g = 255;
+	color.b = 0;
+	color.a = 255;
+	music_title_empty = TTF_RenderUTF8_Blended(font_title, "No music", color);
+	rect_title = music_title_empty->clip_rect;
+	rect_title.x = 20;
+	rect_title.y = 20;
 
-    color.r = 255;
-    color.g = 255;
-    color.b = 0;
-    color.a = 255;
-    music_title_empty = TTF_RenderUTF8_Blended(font_title, "No music", color);
-    SDL_Rect rect_title = music_title_empty->clip_rect;
-    rect_title.x = 20;
-    rect_title.y = 20;
+	music_artist_empty = TTF_RenderUTF8_Blended(font_others, "--", color);
+	rect_artist = music_artist_empty->clip_rect;
+	rect_artist.x =  20;
+	rect_artist.y = rect_title.y + 70;
 
-    music_artist_empty = TTF_RenderUTF8_Blended(font_others, "--", color);
-    SDL_Rect rect_artist = music_artist_empty->clip_rect;
-    rect_artist.x =  20;
-    rect_artist.y = rect_title.y + 70;
+	music_album_empty = TTF_RenderUTF8_Blended(font_others, "--", color);
+	rect_album = music_album_empty->clip_rect;
+	rect_album.x =  20;
+	rect_album.y = rect_artist.y + 30;
 
-    music_album_empty = TTF_RenderUTF8_Blended(font_others, "--", color);
-    SDL_Rect rect_album = music_album_empty->clip_rect;
-    rect_album.x =  20;
-    rect_album.y = rect_artist.y + 30;
+	icon_playpause = TTF_RenderText_Blended(font_others, "PLAY/PAUSE", color);
+	rect_button_playpause = icon_playpause->clip_rect;
+	rect_button_playpause.x = 40;
+	rect_button_playpause.y = HEIGHT - 105;
+	
+	icon_stop = TTF_RenderText_Blended(font_others, "STOP", color);
+	rect_button_stop = icon_stop->clip_rect;
+	rect_button_stop.x = rect_button_playpause.x + rect_button_playpause.w + 50;
+	rect_button_stop.y = HEIGHT - 105;
+	
+	icon_rewind = TTF_RenderText_Blended(font_others, "REWIND", color);
+	rect_button_rewind = icon_rewind->clip_rect;
+	rect_button_rewind.x = rect_button_stop.x + rect_button_stop.w + 50;
+	rect_button_rewind.y = HEIGHT - 105;
+}
 
-    icon_playpause = TTF_RenderText_Blended(font_others, "PLAY/PAUSE", color);
-    SDL_Rect rect_button_playpause = icon_playpause->clip_rect;
-    //rect_button_playpause.h = 75;
-    //rect_button_playpause.w = 75;
-    rect_button_playpause.x = 40;
-    rect_button_playpause.y = HEIGHT - 105;
-    icon_stop = TTF_RenderText_Blended(font_others, "STOP", color);
-    SDL_Rect rect_button_stop = icon_stop->clip_rect;
-    //rect_button_stop.h = 45;
-    //rect_button_stop.w = 45;
-    rect_button_stop.x = rect_button_playpause.x + rect_button_playpause.w + 50;
-    rect_button_stop.y = HEIGHT - 105;
-    icon_rewind = TTF_RenderText_Blended(font_others, "REWIND", color);
-    SDL_Rect rect_button_rewind = icon_rewind->clip_rect;
-    rect_button_rewind.x = rect_button_stop.x + rect_button_stop.w + 50;
-    rect_button_rewind.y = HEIGHT - 105;
-
-    SDL_Event event;
-    int playing = 0;
-    int playpause_selected = 0;
-    int playpause_pressed = 0;
-    int stop_selected = 0;
-    int stop_pressed = 0;
-
-    //check if there are any arguments
-    if(argc >= 2)
-    {
-		loadmusic(argv[1]);
-		
-		loadmetadata();
-    }
-    else
-    {
-        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_WARNING, "Warning", "There's no music to play - please drag and drop one.", window);
-    }
-
-    while(playing == 0)
-    {
-        SDL_UpdateWindowSurface(window);
-        while(SDL_PollEvent(&event))
-        {
-            if(event.type == SDL_MOUSEBUTTONDOWN)
-            {
+void main_loop()
+{
+	SDL_Event event;
+	int playing = 0;
+	int playpause_selected = 0;
+	int playpause_pressed = 0;
+	int stop_selected = 0;
+	int stop_pressed = 0;
+	while(playing == 0)
+	{
+		SDL_UpdateWindowSurface(window);
+		while(SDL_PollEvent(&event))
+		{
+			if(event.type == SDL_MOUSEBUTTONDOWN)
+			{
 				const SDL_Point pt = {event.button.x, event.button.y};
 				if(SDL_PointInRect(&pt, &rect_button_playpause))
 				{
@@ -299,17 +290,6 @@ int main(int argc, char *argv[])
 				SDL_free(event.drop.file);
 				break;
 			}
-			/*if(event.type == SDL_KEYDOWN) //experiments using 3d audio, not much useful for SBMP
-			{
-				if(event.key.keysym.sym == SDLK_LEFT)
-				{
-					Mix_SetPosition(MIX_CHANNEL_POST, 180, 130);
-				}
-				if(event.key.keysym.sym == SDLK_LEFT)
-				{
-					Mix_SetPosition(MIX_CHANNEL_POST, 360, 130);
-				}
-			}*/
 			if(event.type == SDL_QUIT)
 			{
 				playing = 1;
@@ -335,7 +315,10 @@ int main(int argc, char *argv[])
 			SDL_BlitSurface(music_album_empty, NULL, surface, &rect_album);
 		}
 	}
+}
 
+void deinit_everything()
+{
 	Mix_HaltMusic();
 	Mix_FreeMusic(music);
 	Mix_CloseAudio();
@@ -347,6 +330,33 @@ int main(int argc, char *argv[])
 	SDL_DestroyWindow(window);
 
 	SDL_Quit();
+}
+
+int main(int argc, char *argv[])
+{
+	printf("SuperBasicMusicPlayer  Copyright (C) 2022  Matheus K. Schaefer\n");
+	printf("This is free software, and you are welcome to redistribute it under the terms of GNU GPL v3 or later.\n");
+	printf("This software also includes SDL code (including SDL_mixer and SDL_ttf, which is licensed under Zlib license. Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>\n");
+	
+	init_everything();
+
+	SDL_EventState(SDL_DROPFILE, SDL_ENABLE); //just to make sure
+
+	prepare_window();
+
+	//check if there are any arguments
+	if(argc >= 2)
+	{
+		loadmusic(argv[1]);
+		
+		loadmetadata();
+	}
+	else
+	{
+		SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_WARNING, "Warning", "There's no music to play - please drag and drop one.", window);
+	}
+
+	main_loop();
 
 	return 0;
 }
