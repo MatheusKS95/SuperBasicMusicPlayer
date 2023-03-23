@@ -10,18 +10,18 @@ You must pass a song file through command line or dragging and dropping the file
 
 ## Issues (to be fixed)
 
-Unclean code. Untested using libraries already on the system. Cannot play Opus and other music formats. Wasn't made to run on Windows nor MacOS X (might run if you fix the dependencies, but no guarantees).
+Unclean code. Untested using libraries already on the system. Cannot play Opus and other music formats. Wasn't made to run on Windows nor MacOS X (might run if you fix the dependencies, but no guarantees). Might work on Windows if you use MSYS2/MinGW64 to build it.
 
 ## Dependencies
 
-SDL2 version 2.24.0; SDL2_ttf version 2.20.1; SDL_mixer version 2.6.2;
-If your system doesn't have any of this (like me, who uses Debian 11 stable so they are decades behind), please build SuperBasicMusicPlayer using shipped static libraries.
+SDL2 version 2.24.0; SDL2_ttf version 2.20.1; SDL_mixer version 2.6.2; SDL_ttf requires freetype.
+If your system doesn't have any of this (such as some Linux distributions that doesn't update often), please build SuperBasicMusicPlayer using shipped static libraries (freetype still required).
 
 ## How can I build it?
 
 Build using Premake (at least version 4, untested on Premake 5). There are 4 build options (build and release, using static libraries or installed ones).
-If you want to use GNU Make, you can use `make help` to show build options.
-Example:
+You should generate GNU Makefiles, then you can use `make help` to show build options. Other generators might not work due to linkoptions using GCC parameters.
+
 ```
 premake4 gmake
 make config=releasestatic
